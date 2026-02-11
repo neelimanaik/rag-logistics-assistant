@@ -7,3 +7,5 @@ src/outputs/
 data/processed/
 logs/
 .vscode/
+RAG_ARCHITECTURE.docx
+Tooling Decisions.docx
