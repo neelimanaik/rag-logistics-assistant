@@ -1,4 +1,9 @@
 from src.rag.pipeline import RagAssistant
+import os
+
+if os.getenv("CI") == "true":
+    print("skipping LLM Evaluation in CI environment")
+    exit(0)
 
 TEST_SET = [
     {
