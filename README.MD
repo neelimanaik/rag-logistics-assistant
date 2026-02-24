@@ -1,17 +1,25 @@
-# RAG Logistics Assistant — Enterprise-Grade GenAI System
+🚢 RAG Logistics Assistant — Enterprise GenAI Microservice
 
-## Overview
+📌 Overview
 
-This project implements an end-to-end Retrieval-Augmented Generation (RAG) system designed for logistics software environments where users and developers must navigate complex documentation such as:
+The RAG Logistics Assistant is a production-style Retrieval-Augmented Generation (RAG) system designed to support logistics software applications and customs regulatory workflows.
 
-* Application user manuals (eShip, eFreight, eBrokerage)
-* Customs regulations and compliance documents
+It enables natural-language querying over:
+User Manuals (eShip, eFreight, eBrokerage)
+Customs & Regulatory Documents (CBP, FDA, OGA guidelines)
 
-The assistant enables natural-language querying over domain documents, returning grounded answers with traceable citations, confidence scoring, and hybrid retrieval.
+The system delivers:
 
-This system mirrors production enterprise architecture rather than tutorial-level implementations.
+Grounded answers
+Section-level citations
+Confidence scoring
+Guardrail validation
+Hybrid semantic + keyword retrieval
+REST API deployment
+Docker containerization
+CI/CD automation
 
----
+This project reflects enterprise-grade GenAI architecture rather than a tutorial-level implementation.---
 
 ## Problem Statement
 
@@ -29,78 +37,184 @@ This project demonstrates how a RAG system can:
 * Scale across document types
 
 ---
+🏗 Architecture
+
+🌐 High-Level Cloud Architecture
+
+Client (Browser / API Consumer)
+            │
+            ▼
+FastAPI Microservice (Dockerized)
+            │
+            ▼
+Guardrails Layer
+   ├─ Domain Validation
+   ├─ Out-of-Scope Detection
+   └─ Low Confidence Fallback
+            │
+            ▼
+LLM Query Router (Intent Classification)
+            │
+            ▼
+Hybrid Retrieval Engine
+   ├─ FAISS Vector Search
+   ├─ Keyword Search (BM25-style)
+   ├─ Metadata Filtering
+   └─ Deduplication
+            │
+            ▼
+Context Assembly
+            │
+            ▼
+LLM Generation (Streaming Enabled)
+            │
+            ▼
+Confidence Scoring
+            │
+            ▼
+Structured JSON Response
+   ├─ Answer
+   ├─ Citations
+   └─ Confidence Level
+
+🔁 DevOps & Deployment Layer
+
+Docker containerization
+GitHub Actions CI pipeline
+Automated benchmark execution
+Swagger API documentation
+Production-ready REST endpoint
 
 ## Key Features
+🧠 Core Features
+📄 1. Structure-Aware Document Processing
 
-### Document Processing
+PDF ingestion
+Section-based chunking
+Metadata enrichment
+Multi-document indexing
 
-* Structure-aware PDF ingestion
-* Section-based chunking
-* Metadata enrichment
-* Multi-document indexing
+🔍 2. Hybrid Retrieval
 
-### Retrieval Architecture
+Combines:
 
-* Vector embeddings (Azure OpenAI)
-* FAISS vector index
-* Hybrid retrieval
+Vector similarity search (Azure OpenAI embeddings + FAISS)
+Keyword overlap scoring
+Metadata filtering
+LLM-based routing
 
-  * Semantic similarity
-  * Keyword overlap scoring
-* Metadata-based filtering
-* LLM-driven query routing
+This improves recall for:
 
-### Answer Generation
+Regulatory codes (HTS, OGA, FDA)
+Domain-specific terminology
+Acronyms and identifiers
 
-* Context-grounded responses
-* Source citations
-* Confidence scoring
-* Streaming token output
+🧭 3. LLM Query Routing
 
----
+LLM-based intent classification dynamically routes queries to:
 
-## System Architecture
+Functional documentation
+Regulatory documentation
+Mixed/general cases
+Reduces cross-domain contamination.
 
-```
-PDF Docs
-   │
-   ▼
-Structure Chunking
-   │
-   ▼
-Embedding Generation
-   │
-   ▼
-FAISS Vector Store
-   │
-   ▼
-Hybrid Retrieval Engine
-   │
-   ├─ Metadata Filtering
-   ├─ LLM Query Routing
-   └─ Confidence Scoring
-   ▼
-Grounded LLM Response
-   │
-   ▼
-Streaming Answer + Citations
-```
+🛡 4. Guardrails Layer
 
----
+Domain restriction enforcement
+Prompt injection protection
+Low-confidence fallback
+Out-of-scope query rejection
+Prevents hallucinated or unsafe responses.
+
+📊 5. Confidence Scoring
+
+Heuristic confidence based on:
+Retrieval similarity
+Section agreement
+Metadata consistency
+
+Output:
+
+HIGH
+MEDIUM
+LOW
+
+Used to trigger fallback messaging.
+
+📈 6. Evaluation Framework
+
+Offline benchmark testing:
+
+Precision@K
+Section-level grounding validation
+Retrieval accuracy tracking
+CI pipeline runs automated evaluation.
+
+⚡ 7. Streaming Responses
+
+Token-level streaming improves:
+
+Perceived latency
+UX responsiveness
+Real-time interaction capability
 
 ## Technology Stack
 
-| Layer          | Tools                  |
-| -------------- | ---------------------- |
-| LLM            | Azure OpenAI           |
-| Embeddings     | text-embedding-3-large |
-| Vector DB      | FAISS                  |
-| Orchestration  | Python                 |
-| PDF Processing | LangChain utilities    |
-| Similarity     | NumPy                  |
-| Configuration  | python-dotenv          |
+| Layer	               | Technology                  |
+| --------------------- | --------------------------- |
+| LLM	                  | Azure OpenAI                |
+| Embeddings	         | text-embedding-3-large      |
+| Vector DB	            | FAISS                       |
+| Retrieval	            | Hybrid (Vector + Keyword)   |
+| API	                  | FastAPI                     |
+| Containerization	   | Docker                      |
+| CI/CD	               | GitHub Actions              |
+| Evaluation	         | Custom Precision@K          |
+| Configuration	      | python-dotenv               |
+| PDF Processing	      | LangChain utilities         |
 
 ---
+🚀 Running the Project
+
+1️⃣ Install Dependencies
+pip install -r requirements.txt
+2️⃣ Configure Environment
+
+Create .env in project root:
+
+AZURE_OPENAI_API_KEY=...
+AZURE_OPENAI_ENDPOINT=...
+AZURE_OPENAI_API_VERSION=...
+AZURE_OPENAI_MODEL=...
+AZURE_EMBED_MODEL=...
+
+3️⃣ Run API
+uvicorn app:app --reload
+
+Swagger available at:
+
+http://127.0.0.1:8000/docs
+🐳 Run via Docker
+
+Build image:
+
+docker build -t rag-logistics .
+
+Run container:
+
+docker run -p 8000:8000 rag-logistics
+🔄 CI/CD Pipeline
+
+GitHub Actions automatically:
+
+Installs dependencies
+Runs evaluation benchmark
+Validates pipeline integrity
+
+Workflow location:
+
+.github/workflows/ci.yml
+----
 
 ## Design Decisions & Tradeoffs
 
@@ -162,55 +276,34 @@ Example observed metrics:
 
 ---
 
-## Running the Project
+📌 Production Considerations
 
-### Install
+Future upgrades may include:
 
-```bash
-pip install -r requirements.txt
-```
+Azure Container Apps deployment
+RBAC (role-based document access)
+Observability dashboards
+Async ingestion pipeline
+Automated re-indexing
+Vector re-ranking
 
-### Configure
+🎯 Why This Project Matters
 
-Create `.env` in project root:
+This system demonstrates:
 
-```
-AZURE_OPENAI_API_KEY=...
-AZURE_OPENAI_ENDPOINT=...
-AZURE_OPENAI_MODEL=...
-AZURE_EMBED_MODEL=...
-```
+End-to-end RAG architecture
+Hybrid search implementation
+Explainable AI design
+Confidence-based hallucination control
+DevOps integration
+Containerized AI microservices
 
-### Run
+It reflects enterprise solution architecture thinking, not just experimentation.
 
-```bash
-python -m main
-```
+📜 License
 
----
+MIT License
 
-## Future Enhancements
+Copyright (c) 2026 Neelima Naik
 
-* UI chat interface (FastAPI/Streamlit)
-* Role-based access control
-* Vector re-ranking
-* Async ingestion pipeline
-* Feedback learning loop
-* Observability dashboard
-
----
-
-## Author Perspective
-
-This project was developed to demonstrate architectural thinking around enterprise GenAI systems including:
-
-* Retrieval reliability
-* Explainability
-* Modular scalability
-* Production tradeoff awareness
-
----
-
-## License
-
-
+Permission is hereby granted, free of charge, to any person obtaining a copy...
