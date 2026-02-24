@@ -37,7 +37,8 @@ class RagAssistant:
 
         retrieved = self.retriever.query(question, k=10, filters=filters)
         confidence = compute_confidence(retrieved)
-
+        if confidence == "LOW":
+            return "Insufficient evidence found in documents.", citations, confidence
 
         context = self.build_context(retrieved)
 
