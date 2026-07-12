@@ -1,0 +1,14 @@
+.venv/
+venv/
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+src/outputs/
+data/processed/
+logs/
+.vscode/
+RAG_ARCHITECTURE.docx
+Tooling Decisions.docx

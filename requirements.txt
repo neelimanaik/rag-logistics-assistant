@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+openai
+python-dotenv
+faiss-cpu
+numpy
+tqdm
+pypdf
+langchain
+langchain-core
+langchain-community
+langchain-text-splitters
+opentelemetry-api
+opentelemetry-sdk

@@ -1,0 +1,5 @@
+# Development / CI tooling (not needed to run the app)
+pytest
+ruff
+black
+mypy
