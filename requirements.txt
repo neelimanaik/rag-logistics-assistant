@@ -12,3 +12,5 @@ langchain-community
 langchain-text-splitters
 opentelemetry-api
 opentelemetry-sdk
+PyJWT
+python-multipart

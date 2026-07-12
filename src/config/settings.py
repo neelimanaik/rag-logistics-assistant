@@ -53,6 +53,38 @@ class Settings:
         default_factory=lambda: os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
     )
 
+    # ---- API auth (DEMO) ----
+    # In production, replace this local username/password + shared secret with a
+    # real identity provider (Entra ID / Auth0, OIDC) and load the signing secret
+    # from a vault (Azure Key Vault). The defaults here are for local dev only.
+    jwt_secret: str = field(
+        # >= 32 bytes so HMAC-SHA256 is satisfied. Still a DEV default — always
+        # override JWT_SECRET in production (ideally from a vault).
+        default_factory=lambda: os.getenv(
+            "JWT_SECRET", "dev-insecure-change-me-please-use-a-real-32-byte-secret"
+        )
+    )
+    jwt_algorithm: str = field(
+        default_factory=lambda: os.getenv("JWT_ALGORITHM", "HS256")
+    )
+    access_token_expire_minutes: int = field(
+        default_factory=lambda: int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+    )
+    auth_username: str = field(
+        default_factory=lambda: os.getenv("AUTH_USERNAME", "analyst")
+    )
+    auth_password: str = field(
+        default_factory=lambda: os.getenv("AUTH_PASSWORD", "demo")
+    )
+
+    # ---- Rate limiting ----
+    rate_limit_max: int = field(
+        default_factory=lambda: int(os.getenv("RATE_LIMIT_MAX", "30"))
+    )
+    rate_limit_window_seconds: int = field(
+        default_factory=lambda: int(os.getenv("RATE_LIMIT_WINDOW_SECONDS", "60"))
+    )
+
     # ---- Paths ----
     index_path: str = field(
         default_factory=lambda: os.getenv("INDEX_PATH", "data/processed/index")
