@@ -3,7 +3,7 @@
 # around 0.45-0.6 (confirmed via debug_scores.py). They are model-specific and
 # will move into config / the evaluation framework (B6) rather than living as
 # constants here.
-HIGH_MAX_DISTANCE = 0.50    # at least one very close match exists
+HIGH_MAX_DISTANCE = 0.50  # at least one very close match exists
 MEDIUM_MAX_DISTANCE = 0.80  # at least one reasonably close match exists
 
 

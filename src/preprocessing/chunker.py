@@ -1,5 +1,6 @@
 import uuid
 
+
 def chunk_text(text, chunk_size=500, overlap=50):
     """
     Splits text into overlapping chunks for RAG.
@@ -26,19 +27,21 @@ def enrich_chunks(chunks, doc_id):
     enriched = []
 
     for idx, chunk in enumerate(chunks):
-        enriched.append({
-            "chunk_id": str(uuid.uuid4()),
-            "doc_id": doc_id,
-            "chunk_index": idx,
-            "text": chunk,
-            "metadata": {
-                "source_type": "customs_regulation",
-                "authority": "CBP",
-                "country": "US",
-                "application": "eBrokerage",
-                "confidence_level": "high",
-                "is_active": True
+        enriched.append(
+            {
+                "chunk_id": str(uuid.uuid4()),
+                "doc_id": doc_id,
+                "chunk_index": idx,
+                "text": chunk,
+                "metadata": {
+                    "source_type": "customs_regulation",
+                    "authority": "CBP",
+                    "country": "US",
+                    "application": "eBrokerage",
+                    "confidence_level": "high",
+                    "is_active": True,
+                },
             }
-        })
+        )
 
     return enriched

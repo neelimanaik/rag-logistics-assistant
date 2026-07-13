@@ -3,6 +3,7 @@
 The assistant is overridden with a fake, so these run with no model and no index
 (proving the API layer is decoupled from the RAG engine).
 """
+
 from fastapi.testclient import TestClient
 
 from app import app, get_assistant

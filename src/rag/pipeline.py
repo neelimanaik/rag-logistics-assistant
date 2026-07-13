@@ -16,8 +16,7 @@ class RagAssistant:
 
     def build_context(self, chunks):
         context = "\n\n".join(
-            f"[Section: {c['metadata'].get('section')}]\n{c['text']}"
-            for c in chunks
+            f"[Section: {c['metadata'].get('section')}]\n{c['text']}" for c in chunks
         )
         return SYSTEM_PROMPT + "\n\nContext:\n" + context
 
@@ -27,11 +26,13 @@ class RagAssistant:
         citations = []
         for c in retrieved:
             md = c["metadata"]
-            citations.append({
-                "document": md.get("source_file"),
-                "section": md.get("section"),
-                "pages": f"{md.get('page_start')} - {md.get('page_end')}",
-            })
+            citations.append(
+                {
+                    "document": md.get("source_file"),
+                    "section": md.get("section"),
+                    "pages": f"{md.get('page_start')} - {md.get('page_end')}",
+                }
+            )
         return citations
 
     def _prepare(self, question, request_id):
@@ -54,8 +55,10 @@ class RagAssistant:
         confidence = compute_confidence(retrieved)
 
         if confidence == "LOW":
-            return retrieved, confidence, (
-                "Insufficient evidence found in documents.", [], confidence
+            return (
+                retrieved,
+                confidence,
+                ("Insufficient evidence found in documents.", [], confidence),
             )
 
         return retrieved, confidence, None
@@ -71,7 +74,9 @@ class RagAssistant:
 
         retrieved, confidence, early = self._prepare(question, request_id)
         if early is not None:
-            log_event("request_end", request_id, outcome="short_circuit", confidence=early[2])
+            log_event(
+                "request_end", request_id, outcome="short_circuit", confidence=early[2]
+            )
             return early
 
         with timed_stage("generate", request_id):
@@ -83,8 +88,11 @@ class RagAssistant:
         is_grounded, overlap = check_grounding(answer, retrieved_text)
         if not is_grounded:
             log_event(
-                "request_end", request_id, outcome="ungrounded",
-                confidence="LOW", grounding_overlap=round(overlap, 3),
+                "request_end",
+                request_id,
+                outcome="ungrounded",
+                confidence="LOW",
+                grounding_overlap=round(overlap, 3),
             )
             return (
                 "I could not find a well-grounded answer for this in the documents.",
@@ -94,8 +102,11 @@ class RagAssistant:
 
         citations = self._build_citations(retrieved)
         log_event(
-            "request_end", request_id, outcome="answered",
-            confidence=confidence, grounding_overlap=round(overlap, 3),
+            "request_end",
+            request_id,
+            outcome="answered",
+            confidence=confidence,
+            grounding_overlap=round(overlap, 3),
         )
         return answer, citations, confidence
 
@@ -105,12 +116,16 @@ class RagAssistant:
         Formatting for the wire (SSE) is the API layer's job.
         """
         request_id = request_id or new_request_id()
-        log_event("request_start", request_id, path="ask_stream", question_chars=len(question))
+        log_event(
+            "request_start", request_id, path="ask_stream", question_chars=len(question)
+        )
 
         retrieved, confidence, early = self._prepare(question, request_id)
         if early is not None:
             answer, citations, conf = early
-            log_event("request_end", request_id, outcome="short_circuit", confidence=conf)
+            log_event(
+                "request_end", request_id, outcome="short_circuit", confidence=conf
+            )
             yield {
                 "type": "message",
                 "text": answer,
@@ -128,5 +143,7 @@ class RagAssistant:
             for delta in stream_answer_tokens(context, question):
                 yield {"type": "token", "text": delta}
 
-        log_event("request_end", request_id, outcome="answered_stream", confidence=confidence)
+        log_event(
+            "request_end", request_id, outcome="answered_stream", confidence=confidence
+        )
         yield {"type": "done"}

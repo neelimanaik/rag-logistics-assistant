@@ -6,7 +6,7 @@ def infer_document_metadata(file_path: str) -> dict:
             "document_type": "user_manual",
             "application": "eBrokerage",
             "authority": "CBP",
-            "confidence_level": "medium"
+            "confidence_level": "medium",
         }
 
     if "customs" in path:
@@ -14,9 +14,7 @@ def infer_document_metadata(file_path: str) -> dict:
             "document_type": "customs_regulation",
             "application": "eBrokerage",
             "authority": "CBP",
-            "confidence_level": "high"
+            "confidence_level": "high",
         }
 
-    return {
-        "document_type": "unknown"
-    }
+    return {"document_type": "unknown"}

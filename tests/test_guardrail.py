@@ -1,4 +1,5 @@
 """Unit tests for the input guardrail."""
+
 from src.guardrails.validator import (
     INJECTION_MESSAGE,
     OUT_OF_SCOPE_MESSAGE,
@@ -34,7 +35,9 @@ def test_blocks_jailbreak_phrase():
 
 def test_legitimate_customs_phrase_not_falsely_blocked():
     # "act as importer of record" is real customs language; must NOT be blocked.
-    ok, msg = validate_query("Can a broker act as importer of record for weapons imports?")
+    ok, msg = validate_query(
+        "Can a broker act as importer of record for weapons imports?"
+    )
     assert ok is True
     assert msg is None
 

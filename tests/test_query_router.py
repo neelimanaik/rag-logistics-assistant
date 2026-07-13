@@ -1,4 +1,5 @@
 """Unit tests for the fast rule-based query router (no LLM call)."""
+
 from src.rag.query_router import classify_query
 
 

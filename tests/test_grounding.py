@@ -1,4 +1,5 @@
 """Unit tests for the output grounding guardrail."""
+
 from src.guardrails.grounding import check_grounding
 
 

@@ -1,4 +1,5 @@
 """Unit tests for the confidence heuristic (no model/index needed)."""
+
 from src.evaluation.confidence import compute_confidence
 
 

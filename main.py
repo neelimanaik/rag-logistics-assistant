@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 
-#from evaluation import confidence
+# from evaluation import confidence
 load_dotenv(dotenv_path=os.path.join(os.getcwd(), ".env"))
 
 
@@ -15,13 +15,10 @@ import json
 from src.ingestion.pdf_loader import load_pdf
 from src.ingestion.document_router import infer_document_metadata
 from src.preprocessing.structure_chunker import structure_aware_chunk
-#for indexing
-from src.vectorstore.index_manager import build_index
+
+# for indexing
 
 from src.rag.pipeline import RagAssistant
-
-
-
 
 RAW_DATA_ROOT = "data/raw"
 OUTPUT_PATH = "data/processed/chunks"
@@ -48,25 +45,22 @@ def run_ingestion_pipeline():
             for c in chunks:
                 c.metadata.update(base_metadata)
                 c.metadata["source_file"] = file
-                all_chunks.append({
-                    "text": c.page_content,
-                    "metadata": c.metadata
-                })
+                all_chunks.append({"text": c.page_content, "metadata": c.metadata})
 
     output_file = os.path.join(OUTPUT_PATH, "all_chunks.json")
 
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(all_chunks, f, indent=2, ensure_ascii=False)
 
-    print(f"✅ Ingestion completed for all PDFs")
+    print("✅ Ingestion completed for all PDFs")
     print(f"📦 Total chunks: {len(all_chunks)}")
     print(f"📁 Saved to {output_file}")
 
 
 if __name__ == "__main__":
-    #run_ingestion_pipeline() # For Chunking and Metadata Inference
-    #build_index("data/processed/chunks/all_chunks.json",
-     #  "data/processed/index")  # For Indexing the Chunks
+    # run_ingestion_pipeline() # For Chunking and Metadata Inference
+    # build_index("data/processed/chunks/all_chunks.json",
+    #  "data/processed/index")  # For Indexing the Chunks
     from src.rag.pipeline import RagAssistant
 
     assistant = RagAssistant("data/processed/index")
@@ -80,8 +74,6 @@ if __name__ == "__main__":
 
     print("\n===== SOURCES =====\n")
     for c in citations:
-        print(
-            f"{c['document']} | Section: {c['section']} | Pages: {c['pages']}"
-    )
+        print(f"{c['document']} | Section: {c['section']} | Pages: {c['pages']}")
     print("\n===== ANSWER =====\n", answer)
     print("\nConfidence:", confidence)

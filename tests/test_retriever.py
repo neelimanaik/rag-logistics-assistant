@@ -3,6 +3,7 @@
 We bypass Retriever.__init__ so no FAISS index on disk is required; we only
 exercise the pure fusion/dedup logic.
 """
+
 from src.retrieval.retriever import Retriever
 
 
@@ -39,10 +40,15 @@ def test_rrf_keeps_the_copy_with_a_real_score():
 def test_dedup_by_section_removes_duplicate_passages():
     r = _bare_retriever()
     md = {"source_file": "doc.pdf", "section": "FAQ", "page_start": 15, "page_end": 15}
-    other = {"source_file": "doc.pdf", "section": "Intro", "page_start": 1, "page_end": 2}
+    other = {
+        "source_file": "doc.pdf",
+        "section": "Intro",
+        "page_start": 1,
+        "page_end": 2,
+    }
     results = [
         {"text": "one copy", "metadata": md, "score": 0.4},
-        {"text": "near dup", "metadata": md, "score": 0.5},   # same doc/section/pages
+        {"text": "near dup", "metadata": md, "score": 0.5},  # same doc/section/pages
         {"text": "different", "metadata": other, "score": 0.6},
     ]
     deduped = r._dedup_by_section(results)

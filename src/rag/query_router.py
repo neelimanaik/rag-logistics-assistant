@@ -3,13 +3,39 @@ from src.llm.router_prompt import ROUTER_PROMPT
 
 # Cheap keyword hints for rule-based routing (no LLM call).
 _FUNCTIONAL_HINTS = [
-    "how do i", "how to", "steps", "procedure", "screen", "field", "tab",
-    "click", "button", "navigate", "user manual", "enter the", "fill in",
+    "how do i",
+    "how to",
+    "steps",
+    "procedure",
+    "screen",
+    "field",
+    "tab",
+    "click",
+    "button",
+    "navigate",
+    "user manual",
+    "enter the",
+    "fill in",
 ]
 _REGULATORY_HINTS = [
-    "regulation", "law", "duty", "tariff", "hts", "compliance", "cfr", "fda",
-    "aphis", "pga", "customs", "cbp", "admissib", "disclaim", "exemption",
-    "prohibited", "restricted", "certificate",
+    "regulation",
+    "law",
+    "duty",
+    "tariff",
+    "hts",
+    "compliance",
+    "cfr",
+    "fda",
+    "aphis",
+    "pga",
+    "customs",
+    "cbp",
+    "admissib",
+    "disclaim",
+    "exemption",
+    "prohibited",
+    "restricted",
+    "certificate",
 ]
 
 

@@ -3,6 +3,7 @@
 Used to calibrate the confidence thresholds in src/evaluation/confidence.py for
 whichever embedding model you are running, instead of guessing.
 """
+
 from src.config.settings import settings
 from src.retrieval.retriever import Retriever
 

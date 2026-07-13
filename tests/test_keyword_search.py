@@ -1,4 +1,5 @@
 """Unit tests for keyword search result shape (the bug-2 fix)."""
+
 import json
 
 from src.retrieval.keyword_search import KeywordSearch

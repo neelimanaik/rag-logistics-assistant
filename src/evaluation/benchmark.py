@@ -14,6 +14,7 @@ The `expected_labels` are keyword hints matched as case-insensitive substrings o
 retrieved section names. This is a STARTER set — expand it as you learn which
 sections truly answer each question.
 """
+
 from src.config.settings import settings
 from src.retrieval.retriever import Retriever
 from src.evaluation.metrics import precision_at_k, recall_at_k

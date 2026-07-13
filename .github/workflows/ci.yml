@@ -27,13 +27,12 @@ jobs:
       - name: Run tests
         run: python -m pytest -v
 
-  # ---- Lint / type-check: reported but NOT blocking yet ----
-  # The existing code isn't formatted/typed, so making these gates blocking now
-  # would fail the build. continue-on-error lets us SEE the results while we do a
-  # formatting pass; flip these to blocking once the codebase is clean.
+  # ---- Lint / format / type-check ----
+  # After the formatting pass, ruff and black are real gates. mypy runs as an
+  # advisory check (the code isn't fully type-annotated yet), so it reports issues
+  # without failing the build.
   lint:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -51,5 +50,5 @@ jobs:
       - name: Black (format check)
         run: black --check .
 
-      - name: Mypy (type check)
-        run: mypy src
+      - name: Mypy (type check, advisory)
+        run: mypy src || true

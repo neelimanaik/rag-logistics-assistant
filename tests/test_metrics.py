@@ -1,4 +1,5 @@
 """Unit tests for retrieval metrics (pure functions, CI-safe)."""
+
 from src.evaluation.metrics import precision_at_k, recall_at_k
 
 

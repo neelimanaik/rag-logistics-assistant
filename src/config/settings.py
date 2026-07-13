@@ -36,11 +36,11 @@ class Settings:
 
     # ---- Ollama / OpenAI-compatible endpoint ----
     ollama_base_url: str = field(
-        default_factory=lambda: os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1")
+        default_factory=lambda: os.getenv(
+            "OLLAMA_BASE_URL", "http://localhost:11434/v1"
+        )
     )
-    openai_api_key: str = field(
-        default_factory=lambda: os.getenv("OPENAI_API_KEY", "")
-    )
+    openai_api_key: str = field(default_factory=lambda: os.getenv("OPENAI_API_KEY", ""))
 
     # ---- Azure OpenAI (only used when LLM_PROVIDER=azure) ----
     azure_openai_api_key: str = field(
@@ -50,7 +50,9 @@ class Settings:
         default_factory=lambda: os.getenv("AZURE_OPENAI_ENDPOINT", "")
     )
     azure_openai_api_version: str = field(
-        default_factory=lambda: os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
+        default_factory=lambda: os.getenv(
+            "AZURE_OPENAI_API_VERSION", "2024-02-15-preview"
+        )
     )
 
     # ---- API auth (DEMO) ----

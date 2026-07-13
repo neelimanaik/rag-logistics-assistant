@@ -1,4 +1,5 @@
 """Unit tests for the observability helpers."""
+
 import logging
 
 from src.observability.instrument import log_event, new_request_id, timed_stage
@@ -25,8 +26,7 @@ def test_timed_stage_logs_stage_and_duration(caplog):
         with timed_stage("retrieve", "abc123"):
             pass
     records = [
-        r for r in caplog.records
-        if getattr(r, "fields", {}).get("stage") == "retrieve"
+        r for r in caplog.records if getattr(r, "fields", {}).get("stage") == "retrieve"
     ]
     assert records
     assert records[0].fields["request_id"] == "abc123"

@@ -42,14 +42,15 @@ class FaissStore:
 
         for rank, i in enumerate(indices[0]):
             if i < len(self.metadata):
-                results.append({
-                    "metadata": self.metadata[i]["metadata"],
-                    "text": self.metadata[i]["text"],
-                    "score": float(distances[0][rank])
-                })
+                results.append(
+                    {
+                        "metadata": self.metadata[i]["metadata"],
+                        "text": self.metadata[i]["text"],
+                        "score": float(distances[0][rank]),
+                    }
+                )
 
         return results
-
 
     # ---------- Save ----------
     def save(self, path):

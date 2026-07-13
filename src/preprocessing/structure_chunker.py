@@ -20,7 +20,7 @@ def is_section_header(line: str) -> bool:
 
     if line.istitle():
         return True
-    
+
     if re.match(r"^\d+(\.\d+)*\s+", line):
         return True
 
@@ -31,9 +31,7 @@ def is_section_header(line: str) -> bool:
 
 
 def structure_aware_chunk(
-    pages: List[Document],
-    max_chunk_size: int = 800,
-    overlap: int = 100
+    pages: List[Document], max_chunk_size: int = 800, overlap: int = 100
 ) -> List[Document]:
     """
     Create section-preserving chunks from PDF pages.
@@ -41,7 +39,7 @@ def structure_aware_chunk(
 
     chunks = []
     current_section = "UNKNOWN"
-    current_text = []
+    current_text: list[str] = []
     page_start = None
 
     for page in pages:
@@ -58,8 +56,8 @@ def structure_aware_chunk(
                             metadata={
                                 "section": current_section,
                                 "page_start": page_start,
-                                "page_end": page_number
-                            }
+                                "page_end": page_number,
+                            },
                         )
                     )
                     current_text = []
@@ -77,15 +75,14 @@ def structure_aware_chunk(
                 metadata={
                     "section": current_section,
                     "page_start": page_start,
-                    "page_end": page_number
-                }
+                    "page_end": page_number,
+                },
             )
         )
 
     # --- Size refinement (only within sections) ---
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=max_chunk_size,
-        chunk_overlap=overlap
+        chunk_size=max_chunk_size, chunk_overlap=overlap
     )
 
     final_chunks = []
@@ -93,12 +90,7 @@ def structure_aware_chunk(
         if len(chunk.page_content) > max_chunk_size:
             sub_chunks = splitter.split_text(chunk.page_content)
             for sub in sub_chunks:
-                final_chunks.append(
-                    Document(
-                        page_content=sub,
-                        metadata=chunk.metadata
-                    )
-                )
+                final_chunks.append(Document(page_content=sub, metadata=chunk.metadata))
         else:
             final_chunks.append(chunk)
 

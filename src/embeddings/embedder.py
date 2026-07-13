@@ -11,7 +11,7 @@ def embed_texts(texts, batch_size=20):
     """Generate embeddings for a list of texts, batched to avoid API limits."""
     all_embeddings = []
     for i in range(0, len(texts), batch_size):
-        batch = texts[i:i + batch_size]
+        batch = texts[i : i + batch_size]
         response = client.embeddings.create(
             model=EMBED_MODEL,
             input=batch,

@@ -38,4 +38,6 @@ def timed_stage(stage, request_id):
             duration_ms = round((time.perf_counter() - start) * 1000, 2)
             if current_span is not None:
                 current_span.set_attribute("duration_ms", duration_ms)
-            log_event("stage_complete", request_id, stage=stage, duration_ms=duration_ms)
+            log_event(
+                "stage_complete", request_id, stage=stage, duration_ms=duration_ms
+            )

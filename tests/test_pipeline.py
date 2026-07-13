@@ -4,6 +4,7 @@ We bypass __init__ (so no FAISS index is needed) and monkeypatch the LLM-facing
 helpers, so these run with no model and no network. They lock in the bug-1
 (citation shape), bug-5 (guardrail), and B3 (grounding) behaviour.
 """
+
 from src.rag import pipeline
 from src.rag.pipeline import RagAssistant
 
@@ -54,16 +55,18 @@ def test_happy_path_builds_citations(monkeypatch):
         "generate_answer",
         lambda context, question: "Duty exemption applies to certain imported goods.",
     )
-    results = [{
-        "metadata": {
-            "source_file": "doc.pdf",
-            "section": "FAQ",
-            "page_start": 15,
-            "page_end": 15,
-        },
-        "text": "Duty exemption certificate applies to certain imported goods.",
-        "score": 0.4,
-    }]
+    results = [
+        {
+            "metadata": {
+                "source_file": "doc.pdf",
+                "section": "FAQ",
+                "page_start": 15,
+                "page_end": 15,
+            },
+            "text": "Duty exemption certificate applies to certain imported goods.",
+            "score": 0.4,
+        }
+    ]
     a = _assistant(results)
     answer, citations, confidence = a.ask("good query")
     assert answer == "Duty exemption applies to certain imported goods."
@@ -79,11 +82,18 @@ def test_ungrounded_answer_is_refused(monkeypatch):
         "generate_answer",
         lambda context, question: "Bananas and zebras enjoy spaceship holidays.",
     )
-    results = [{
-        "metadata": {"source_file": "doc.pdf", "section": "FAQ", "page_start": 1, "page_end": 1},
-        "text": "Duty exemption certificate applies to imported goods.",
-        "score": 0.4,
-    }]
+    results = [
+        {
+            "metadata": {
+                "source_file": "doc.pdf",
+                "section": "FAQ",
+                "page_start": 1,
+                "page_end": 1,
+            },
+            "text": "Duty exemption certificate applies to imported goods.",
+            "score": 0.4,
+        }
+    ]
     a = _assistant(results)
     answer, citations, confidence = a.ask("good query")
     assert "could not find a well-grounded answer" in answer

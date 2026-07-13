@@ -97,6 +97,7 @@ def ask_question_stream(
     The pipeline yields structured event dicts; here we format each onto the wire
     as `data: <json>\\n\\n`, so the client sees tokens as they're produced.
     """
+
     def event_stream():
         for event in assistant.ask_stream(query.question):
             yield f"data: {json.dumps(event)}\n\n"

@@ -13,7 +13,7 @@ WINDOW_SECONDS = settings.rate_limit_window_seconds
 # In-memory sliding window: key -> timestamps of recent requests.
 # NOTE: this is per-process. For a multi-instance deployment you'd back it with
 # a shared store (e.g. Redis) so the limit is enforced across all instances.
-_hits = defaultdict(deque)
+_hits: defaultdict[str, deque] = defaultdict(deque)
 
 
 def reset():

@@ -85,7 +85,8 @@ class Retriever:
         #    unfiltered set if filtering would leave nothing.
         if filters:
             filtered = [
-                r for r in fused
+                r
+                for r in fused
                 if all(r["metadata"].get(fk) == fv for fk, fv in filters.items())
             ]
             if filtered:
