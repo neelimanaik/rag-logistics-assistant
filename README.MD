@@ -1,309 +1,154 @@
-🚢 RAG Logistics Assistant — Enterprise GenAI Microservice
+# 🚢 RAG Logistics Assistant
 
-📌 Overview
+![CI](https://github.com/neelimanaik/rag-logistics-assistant/actions/workflows/ci.yml/badge.svg)
 
-The RAG Logistics Assistant is a production-style Retrieval-Augmented Generation (RAG) system designed to support logistics software applications and customs regulatory workflows.
+A production-style **Retrieval-Augmented Generation (RAG)** service that answers natural-language questions over logistics software manuals and customs/regulatory documents (CBP, FDA, APHIS). It returns **grounded answers with section-level citations and a confidence rating**, behind authentication, rate limiting, guardrails, and full observability.
 
-It enables natural-language querying over:
-User Manuals (eShip, eFreight, eBrokerage)
-Customs & Regulatory Documents (CBP, FDA, OGA guidelines)
-
-The system delivers:
-
-Grounded answers
-Section-level citations
-Confidence scoring
-Guardrail validation
-Hybrid semantic + keyword retrieval
-REST API deployment
-Docker containerization
-CI/CD automation
-
-This project reflects enterprise-grade GenAI architecture rather than a tutorial-level implementation.---
-
-## Problem Statement
-
-Logistics application users and developers frequently consult multiple documents to complete operational or regulatory tasks. This results in:
-
-* Time delays for critical shipping workflows
-* Support team overload
-* Risk of regulatory misinterpretation
-
-This project demonstrates how a RAG system can:
-
-* Provide instant contextual answers
-* Reduce dependency on support teams
-* Improve compliance navigation
-* Scale across document types
+The system is **backend-agnostic**: it runs on a free local model (Ollama) for development and switches to Azure OpenAI or OpenAI by changing a single environment variable — no code changes.
 
 ---
-🏗 Architecture
 
-🌐 High-Level Cloud Architecture
+## What it does
 
-Client (Browser / API Consumer)
-            │
-            ▼
-FastAPI Microservice (Dockerized)
-            │
-            ▼
-Guardrails Layer
-   ├─ Domain Validation
-   ├─ Out-of-Scope Detection
-   └─ Low Confidence Fallback
-            │
-            ▼
-LLM Query Router (Intent Classification)
-            │
-            ▼
-Hybrid Retrieval Engine
-   ├─ FAISS Vector Search
-   ├─ Keyword Search (BM25-style)
-   ├─ Metadata Filtering
-   └─ Deduplication
-            │
-            ▼
-Context Assembly
-            │
-            ▼
-LLM Generation (Streaming Enabled)
-            │
-            ▼
-Confidence Scoring
-            │
-            ▼
-Structured JSON Response
-   ├─ Answer
-   ├─ Citations
-   └─ Confidence Level
+Ask a question over HTTP → the service retrieves the most relevant passages from your indexed PDFs (hybrid vector + keyword search), sends them to an LLM as context, verifies the answer is grounded in those sources, and returns structured JSON.
 
-🔁 DevOps & Deployment Layer
+**Request flow:**
 
-Docker containerization
-GitHub Actions CI pipeline
-Automated benchmark execution
-Swagger API documentation
-Production-ready REST endpoint
+```
+POST /ask  (JWT auth + per-user rate limit)
+  → input guardrail   (block prompt-injection / out-of-scope)
+  → route             (fast rule-based document-type filter)
+  → retrieve          (vector + keyword, fused with RRF, section-deduped)
+  → confidence        (HIGH / MEDIUM / LOW from best match)
+  → generate          (LLM answers from the retrieved context)
+  → output guardrail  (verify the answer is grounded in the sources)
+  → { answer, citations, confidence }
+```
 
-## Key Features
-🧠 Core Features
-📄 1. Structure-Aware Document Processing
-
-PDF ingestion
-Section-based chunking
-Metadata enrichment
-Multi-document indexing
-
-🔍 2. Hybrid Retrieval
-
-Combines:
-
-Vector similarity search (Azure OpenAI embeddings + FAISS)
-Keyword overlap scoring
-Metadata filtering
-LLM-based routing
-
-This improves recall for:
-
-Regulatory codes (HTS, OGA, FDA)
-Domain-specific terminology
-Acronyms and identifiers
-
-🧭 3. LLM Query Routing
-
-LLM-based intent classification dynamically routes queries to:
-
-Functional documentation
-Regulatory documentation
-Mixed/general cases
-Reduces cross-domain contamination.
-
-🛡 4. Guardrails Layer
-
-Domain restriction enforcement
-Prompt injection protection
-Low-confidence fallback
-Out-of-scope query rejection
-Prevents hallucinated or unsafe responses.
-
-📊 5. Confidence Scoring
-
-Heuristic confidence based on:
-Retrieval similarity
-Section agreement
-Metadata consistency
-
-Output:
-
-HIGH
-MEDIUM
-LOW
-
-Used to trigger fallback messaging.
-
-📈 6. Evaluation Framework
-
-Offline benchmark testing:
-
-Precision@K
-Section-level grounding validation
-Retrieval accuracy tracking
-CI pipeline runs automated evaluation.
-
-⚡ 7. Streaming Responses
-
-Token-level streaming improves:
-
-Perceived latency
-UX responsiveness
-Real-time interaction capability
-
-## Technology Stack
-
-| Layer	               | Technology                  |
-| --------------------- | --------------------------- |
-| LLM	                  | Azure OpenAI                |
-| Embeddings	         | text-embedding-3-large      |
-| Vector DB	            | FAISS                       |
-| Retrieval	            | Hybrid (Vector + Keyword)   |
-| API	                  | FastAPI                     |
-| Containerization	   | Docker                      |
-| CI/CD	               | GitHub Actions              |
-| Evaluation	         | Custom Precision@K          |
-| Configuration	      | python-dotenv               |
-| PDF Processing	      | LangChain utilities         |
+Every stage is timed and logged with a correlating `request_id`, and traced with OpenTelemetry.
 
 ---
-🚀 Running the Project
 
-1️⃣ Install Dependencies
+## Features
+
+- **Structure-aware ingestion** — PDFs are chunked along document sections, preserving `section` + page numbers so answers can cite "Section X, pages 4–5".
+- **Hybrid retrieval with Reciprocal Rank Fusion (RRF)** — vector search for meaning + keyword search for exact identifiers (HTS codes, CFR numbers), fused by rank so two incomparable score scales combine cleanly. Section-level dedup keeps citations clean.
+- **Layered guardrails** — input-side prompt-injection / jailbreak detection and out-of-scope rejection (runs before any compute); output-side grounding check that refuses answers not supported by the retrieved text.
+- **Confidence scoring** — HIGH / MEDIUM / LOW derived from the best retrieval match, used to trigger fallbacks.
+- **Provider seam** — one `LLM_PROVIDER` env var selects Ollama (local), OpenAI, or Azure OpenAI. Chat and embeddings share one configuration.
+- **Production API** — FastAPI with JWT auth (`/token`), per-user sliding-window rate limiting, a cheap `/health` probe, consistent JSON error handling, and real Server-Sent-Events streaming (`/ask/stream`).
+- **Observability** — structured JSON logging with request IDs, per-stage latency timing, and OpenTelemetry tracing (console locally; swappable to Azure Monitor / CloudWatch in prod).
+- **Evaluation** — a Precision@K / Recall@K benchmark over a labelled question set, so retrieval-quality changes can be measured.
+- **Tested & CI-gated** — 44 pytest tests (running with fakes, no model or index needed) gate every push; ruff + black + mypy enforce style and types.
+
+---
+
+## Tech stack
+
+| Layer | Technology |
+| --- | --- |
+| API | FastAPI (Uvicorn) |
+| LLM / embeddings | Ollama (local default) · OpenAI · Azure OpenAI — selected by `LLM_PROVIDER` |
+| Vector store | FAISS (local); swappable for Azure AI Search / Pinecone |
+| Retrieval | Hybrid (vector + keyword) with RRF fusion |
+| Auth | OAuth2 password flow + JWT (PyJWT) |
+| Observability | Structured logging + OpenTelemetry |
+| Testing / quality | pytest · ruff · black · mypy |
+| CI | GitHub Actions |
+| PDF processing | LangChain loaders + splitters |
+
+---
+
+## Quickstart (local, free — no cloud account)
+
+Runs entirely on your machine with a local model. Full details in **[OLLAMA_SETUP.md](OLLAMA_SETUP.md)**.
+
+```bash
+# 1. Install Ollama (ollama.com) and pull the models
+ollama pull llama3.2
+ollama pull nomic-embed-text
+
+# 2. Set up the environment
+python -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-2️⃣ Configure Environment
+cp .env.example .env                               # defaults point at Ollama
 
-Create .env in project root:
+# 3. Build the search index from the PDFs in data/raw/
+python ingest.py
 
-AZURE_OPENAI_API_KEY=...
-AZURE_OPENAI_ENDPOINT=...
-AZURE_OPENAI_API_VERSION=...
-AZURE_OPENAI_MODEL=...
-AZURE_EMBED_MODEL=...
-
-3️⃣ Run API
+# 4. Run the API
 uvicorn app:app --reload
+# Swagger UI: http://127.0.0.1:8000/docs
+```
 
-Swagger available at:
+Get a token from `POST /token` (demo creds: `analyst` / `demo`), then call `POST /ask` with `{ "question": "..." }`.
 
-http://127.0.0.1:8000/docs
-🐳 Run via Docker
-
-Build image:
-
-docker build -t rag-logistics .
-
-Run container:
-
-docker run -p 8000:8000 rag-logistics
-🔄 CI/CD Pipeline
-
-GitHub Actions automatically:
-
-Installs dependencies
-Runs evaluation benchmark
-Validates pipeline integrity
-
-Workflow location:
-
-.github/workflows/ci.yml
-----
-
-## Design Decisions & Tradeoffs
-
-### FAISS vs Managed Vector DB
-
-**Chosen:** FAISS
-
-* Lightweight
-* Offline capability
-* Fast local iteration
-
-**Tradeoff:**
-
-* No distributed scaling
-* No managed indexing
-
-**Production Alternative:**
-Azure AI Search / Pinecone / Elastic
+**To use Azure OpenAI or OpenAI instead**, edit `.env` (`LLM_PROVIDER=azure` or `openai`) — no code changes.
 
 ---
 
-### Hybrid Retrieval vs Pure Vector
+## Tests & CI
 
-**Chosen:** Hybrid
+```bash
+pip install -r requirements-dev.txt
+python -m pytest -v          # 44 tests, no model/index required
+ruff check . && black --check . && mypy src
+```
 
-* Improves recall for domain identifiers
-* Captures semantic + lexical matches
+CI (`.github/workflows/ci.yml`) runs on every push:
 
-**Tradeoff:**
+- **`test` job (blocking):** runs the full pytest suite — the real quality gate.
+- **`lint` job:** ruff + black enforced, mypy advisory.
 
-* Slight complexity increase
-* Score fusion tuning required
-
----
-
-### LLM Routing
-
-**Chosen:** Intent classification via LLM
-
-**Benefits**
-
-* Flexible domain scaling
-* Reduced rule maintenance
-
-**Tradeoff**
-
-* Additional LLM call latency
+The retrieval benchmark runs **locally** (`python -m src.evaluation.benchmark`), not in CI, because it needs the model and index. Its metric functions are unit-tested in CI.
 
 ---
 
-## Evaluation Signals
+## Project structure
 
-Example observed metrics:
-
-* Compression Ratio: ~10%
-* Coverage Score: ~50%
-* Hybrid retrieval accuracy improvement vs vector-only
-* Context-grounded answer traceability
+```
+app.py                     FastAPI app (endpoints, auth, rate limit, errors)
+ingest.py / main.py        Offline ingestion → FAISS index
+src/config/settings.py     Single source of truth for configuration
+src/llm/                   provider seam + chat client + prompts
+src/embeddings/            embedding client
+src/ingestion/ + preprocessing/   PDF load, metadata, section-aware chunking
+src/vectorstore/           FAISS wrapper + index builder
+src/retrieval/             keyword search + hybrid retriever (RRF)
+src/rag/                   query router + pipeline orchestrator
+src/guardrails/            input validator + output grounding
+src/evaluation/            confidence, metrics, benchmark
+src/api/                   JWT auth + rate limiter
+src/observability/         logging, timing, OpenTelemetry tracing
+tests/                     44 tests (fakes; no model/index)
+```
 
 ---
 
-📌 Production Considerations
+## Design decisions & trade-offs
 
-Future upgrades may include:
+**FAISS vs a managed vector DB** — FAISS is lightweight, free, and offline, ideal for development. It's brute-force and single-process; at scale you'd move to Azure AI Search / Pinecone behind the same interface.
 
-Azure Container Apps deployment
-RBAC (role-based document access)
-Observability dashboards
-Async ingestion pipeline
-Automated re-indexing
-Vector re-ranking
+**RRF for hybrid retrieval** — vector distance and keyword-overlap counts aren't comparable, so results are fused by *rank* (`sum of 1/(60 + rank)`) rather than raw score. Documents ranked highly by both sources rise to the top.
 
-🎯 Why This Project Matters
+**Rule-based routing** — an earlier LLM-based router cost ~10 seconds per request (surfaced by the per-stage timing). It was replaced with cheap keyword rules (LLM kept as an optional fallback), removing that latency with no quality loss.
 
-This system demonstrates:
+**Provider abstraction** — depending on an interface rather than a specific vendor makes the system testable and cloud-portable, and is why the test suite runs with no model.
 
-End-to-end RAG architecture
-Hybrid search implementation
-Explainable AI design
-Confidence-based hallucination control
-DevOps integration
-Containerized AI microservices
+---
 
-It reflects enterprise solution architecture thinking, not just experimentation.
+## Production considerations
 
-📜 License
+This repo is a portfolio-grade build with clearly marked boundaries. For real production you would:
 
-MIT License
+- Swap demo JWT credentials for an identity provider (Entra ID / Auth0, OIDC) with the signing secret in Key Vault.
+- Back the in-memory rate limiter with Redis so limits hold across instances.
+- Replace local FAISS with a managed vector store (Azure AI Search).
+- Export traces/metrics to Azure Monitor or CloudWatch.
+- Add contract + load tests and flip the lint gate to blocking after a formatting pass.
 
-Copyright (c) 2026 Neelima Naik
+---
 
-Permission is hereby granted, free of charge, to any person obtaining a copy...
+## License
+
+MIT License — Copyright (c) 2026 Neelima Naik
