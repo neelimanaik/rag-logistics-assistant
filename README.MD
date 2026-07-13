@@ -27,6 +27,28 @@ POST /ask  (JWT auth + per-user rate limit)
 
 Every stage is timed and logged with a correlating `request_id`, and traced with OpenTelemetry.
 
+```mermaid
+flowchart TD
+    Client[Client / API consumer] -->|POST /ask + JWT| API[FastAPI service]
+    API --> AuthRL[Auth + per-user rate limit]
+    AuthRL --> GIn[Input guardrail<br/>injection / out-of-scope]
+    GIn --> Route[Router<br/>rule-based filter]
+    Route --> Retrieve[Hybrid retrieval<br/>vector + keyword · RRF · dedup]
+    Retrieve --> Conf[Confidence<br/>HIGH / MEDIUM / LOW]
+    Conf --> Gen[LLM generation]
+    Gen --> GOut[Output guardrail<br/>grounding check]
+    GOut --> Resp[JSON: answer + citations + confidence]
+
+    subgraph Ingest ["Offline ingestion"]
+        PDF[PDFs] --> Chunk[Section-aware chunking] --> Embed[Embeddings] --> FAISS[(FAISS index)]
+    end
+    FAISS -.-> Retrieve
+
+    Providers[LLM / embeddings backend<br/>Ollama · OpenAI · Azure — swappable] -.-> Embed
+    Providers -.-> Gen
+    API -.-> Obs[Observability<br/>structured logs + OpenTelemetry]
+```
+
 ---
 
 ## Features
