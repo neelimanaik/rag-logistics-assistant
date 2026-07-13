@@ -159,15 +159,24 @@ tests/                     44 tests (fakes; no model/index)
 
 ---
 
-## Production considerations
+## What a production deployment would add
 
-This repo is a portfolio-grade build with clearly marked boundaries. For real production you would:
+This is a portfolio-grade build — a scaled-down but faithful model of a production RAG system, with deliberately marked boundaries. A full production deployment adds:
 
-- Swap demo JWT credentials for an identity provider (Entra ID / Auth0, OIDC) with the signing secret in Key Vault.
-- Back the in-memory rate limiter with Redis so limits hold across instances.
-- Replace local FAISS with a managed vector store (Azure AI Search).
-- Export traces/metrics to Azure Monitor or CloudWatch.
-- Add contract + load tests and flip the lint gate to blocking after a formatting pass.
+**Retrieval quality**
+- A **re-ranker** (cross-encoder or a rerank API) after hybrid retrieval to sharpen the top-k.
+- A **managed, scalable vector store** (Azure AI Search / Pinecone / OpenSearch) instead of local FAISS.
+- **Caching** (embedding + semantic response cache) and **token/cost tracking**.
+
+**Evaluation & safety**
+- **Answer-quality evaluation** — faithfulness, relevance, hallucination rate — with a framework like RAGAS or LangSmith, plus an online user-feedback loop (the current benchmark evaluates retrieval only, via Precision@K / Recall@K).
+- **PII detection/redaction** (e.g. Presidio) and a **content-moderation** layer, on top of the current injection + grounding guardrails.
+
+**Operations & security**
+- A real **identity provider** (Entra ID / Auth0, OIDC) with the JWT signing secret in **Key Vault**, and **document-level access control** (RBAC).
+- **Redis-backed rate limiting** so limits hold across instances.
+- **Cloud deployment with infrastructure-as-code** (Bicep / Terraform), and traces/metrics exported to **Azure Monitor / CloudWatch**.
+- Contract + load tests, and the lint gate flipped to blocking.
 
 ---
 
